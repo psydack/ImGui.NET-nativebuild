@@ -6,7 +6,6 @@ set BUILD_CONFIG=Release
 set BUILD_ARCH=x64
 set BUILD_CMAKE_GENERATOR_PLATFORM=x64
 
-start /wait %~dp0/generate-all.cmd|rem
 goto :ArgLoop
 :ArgLoop
 if [%1] == [] goto Build
