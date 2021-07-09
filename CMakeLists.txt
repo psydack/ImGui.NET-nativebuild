@@ -60,7 +60,7 @@ add_library(cimnodes SHARED
 
 target_link_libraries(cimnodes ${IMGUI_LIBRARIES})
 
-target_include_directories(cimnodes PUBLIC cimgui/imgui)
+target_include_directories(cimnodes PUBLIC cimgui/imgui cimnodes/imnodes)
 set_target_properties(cimnodes PROPERTIES PREFIX "")
 
 # CIMGUIZMOS
