@@ -1,12 +1,12 @@
 [submodule "cimgui"]
 	path = cimgui
-	url = https://github.com/psydack/cimgui.git
+	url = git@github.com:psydack/cimgui.git
 [submodule "cimplot"]
 	path = cimplot
-	url = https://github.com/psydack/cimplot.git
+	url = git@github.com:psydack/cimplot.git
 [submodule "cimnodes"]
 	path = cimnodes
-	url = https://github.com/psydack/cimnodes.git
+	url = git@github.com:psydack/cimnodes.git
 [submodule "cimguizmo"]
 	path = cimguizmo
-	url = https://github.com/psydack/cimguizmo.git
+	url = git@github.com:psydack/cimguizmo.git

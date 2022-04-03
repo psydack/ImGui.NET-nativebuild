@@ -259,3 +259,5 @@ Session.vim
 .idea
 
 build/
+
+.DS_Store
