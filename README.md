@@ -1,3 +1,10 @@
+# newer commands
+
+After download this package do:
+
+`git pull --recurse-submodules`
+
+
 # To Update to the latest cimgui version
 
 1. git submodule update --init
@@ -14,3 +21,7 @@
 2. git tag -a v1.4 -m "my version 1.4"
 
 3. git push origin v1.4
+
+
+# for later
+
