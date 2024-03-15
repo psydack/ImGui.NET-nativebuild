@@ -23,5 +23,7 @@ After download this package do:
 3. git push origin v1.4
 
 
-# for later
+# pre requisites
+
+gcc or cl
 
