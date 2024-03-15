@@ -4,6 +4,12 @@ After download this package do:
 
 `git pull --recurse-submodules`
 
+after you need enter in each module and update it like:
+
+```bash
+cd cimgui
+git add -A && git commit -m "bump version" && git push origin HEAD:master 
+```
 
 # To Update to the latest cimgui version
 
