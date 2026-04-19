@@ -4,17 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to update and release, without the v prefix. Example: 1.92.8"
+        description: "Version to update and release. Example: 1.92.8"
         required: true
         type: string
-      release_type:
-        description: "Native build configuration"
-        required: true
-        default: "Release"
-        type: choice
-        options:
-          - Release
-          - Debug
 
 permissions:
   contents: write
@@ -64,7 +56,7 @@ jobs:
 
           version="${{ steps.validate.outputs.requested }}"
           branch="update/${version}"
-          tag="v${version}"
+          tag="${version}"
 
           if git ls-remote --exit-code --heads origin "${branch}" >/dev/null 2>&1; then
             echo "Branch ${branch} already exists on origin." >&2
@@ -125,7 +117,7 @@ jobs:
 
           version="${{ steps.validate.outputs.requested }}"
           branch="update/${version}"
-          tag="v${version}"
+          tag="${version}"
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -188,28 +180,28 @@ jobs:
           name: source-package
           path: bin/Packages/Release/*.nupkg
 
-      - name: Build ${{ inputs.release_type }}
+      - name: Build Release
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
-            ./ci-build.cmd ${{ inputs.release_type }} ${{ matrix.architecture }}
+            ./ci-build.cmd Release ${{ matrix.architecture }}
           else
-            ./ci-build.sh ${{ inputs.release_type }}
+            ./ci-build.sh Release
           fi
         shell: bash
 
-      - name: Upload win-${{ matrix.architecture }} ${{ inputs.release_type }}
+      - name: Upload win-${{ matrix.architecture }} Release
         uses: actions/upload-artifact@v4
         if: matrix.os == 'windows-latest'
         with:
           name: win-${{ matrix.architecture }}
-          path: cimgui/build/${{ matrix.architecture }}/${{ inputs.release_type }}/*
+          path: cimgui/build/${{ matrix.architecture }}/Release/*
 
-      - name: Upload ${{ matrix.os }} ${{ inputs.release_type }}
+      - name: Upload ${{ matrix.os }} Release
         uses: actions/upload-artifact@v4
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
         with:
           name: ${{ matrix.os }}-x64
-          path: cimgui/build/${{ inputs.release_type }}/*
+          path: cimgui/build/Release/*
 
       - name: Upload Json files
         uses: actions/upload-artifact@v4
@@ -223,25 +215,6 @@ jobs:
     needs: [PrepareRelease, Build]
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ needs.PrepareRelease.outputs.branch }}
-
-      - name: Create release tag
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          version="${{ needs.PrepareRelease.outputs.version }}"
-          tag="${{ needs.PrepareRelease.outputs.tag }}"
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git tag -a "${tag}" -m "Release ${version}"
-          git push origin "${tag}"
-
       - name: Download artifacts
         uses: actions/download-artifact@v4
 
@@ -262,6 +235,37 @@ jobs:
           cp JsonFiles/*.json release-assets/
 
           find release-assets -maxdepth 1 -type f -print | sort
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.PrepareRelease.outputs.branch }}
+
+      - name: Create release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="${{ needs.PrepareRelease.outputs.version }}"
+          tag="${{ needs.PrepareRelease.outputs.tag }}"
+          expected_commit="$(git rev-parse HEAD)"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "refs/tags/${tag}:refs/tags/${tag}" || true
+
+          if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+            existing_commit="$(git rev-parse "${tag}^{commit}")"
+            if [ "${existing_commit}" != "${expected_commit}" ]; then
+              echo "Tag ${tag} already exists at ${existing_commit}, expected ${expected_commit}." >&2
+              exit 1
+            fi
+
+            echo "Tag ${tag} already exists at ${expected_commit}; continuing."
+          else
+            git tag -a "${tag}" -m "Release ${version}"
+            git push origin "${tag}"
+          fi
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2

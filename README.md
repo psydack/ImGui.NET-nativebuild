@@ -131,14 +131,14 @@ bin/Packages/Release/
 
 ## Releasing
 
-Releases are triggered by annotated tags.
+Releases are triggered by annotated version tags.
 
 ```bash
-git tag -a v1.92.7 -m "Release 1.92.7"
-git push origin v1.92.7
+git tag -a 1.92.7 -m "Release 1.92.7"
+git push origin 1.92.7
 ```
 
-Tags matching `vN.N` are treated as public releases by `version.json`.
+Tags matching `N.N.N` or `vN.N.N` are treated as public releases by `version.json`.
 
 ## Manual Release Workflow
 
@@ -153,8 +153,8 @@ When it runs, the workflow:
 3. Updates `version.json` and the current version line in this README.
 4. Creates and pushes an `update/<version>` branch.
 5. Builds all CI artifacts from that branch.
-6. Creates and pushes the `v<version>` tag.
-7. Creates a GitHub release named `v<version>` with versioned artifact names.
+6. Creates and pushes the `<version>` tag.
+7. Creates a GitHub release named `<version>` with versioned artifact names.
 
 ## CI
 
