@@ -152,8 +152,8 @@ When it runs, the workflow:
 2. Verifies that `cimgui/imgui/imgui.h` reports the requested `IMGUI_VERSION`.
 3. Updates `version.json` and the current version line in this README.
 4. Creates and pushes an `update/<version>` branch.
-5. Creates and pushes the `v<version>` tag.
-6. Builds all CI artifacts.
+5. Builds all CI artifacts from that branch.
+6. Creates and pushes the `v<version>` tag.
 7. Creates a GitHub release named `v<version>` with versioned artifact names.
 
 ## CI

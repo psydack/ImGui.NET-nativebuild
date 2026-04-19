@@ -139,10 +139,7 @@ jobs:
           fi
 
           git commit -m "Update cimgui to ${version}"
-          git tag -a "${tag}" -m "Release ${version}"
-
           git push origin "HEAD:${branch}"
-          git push origin "${tag}"
 
           commit_sha="$(git rev-parse HEAD)"
 
@@ -170,7 +167,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ needs.PrepareRelease.outputs.tag }}
+          ref: ${{ needs.PrepareRelease.outputs.branch }}
           submodules: recursive
 
       - name: Setup .NET
@@ -226,6 +223,25 @@ jobs:
     needs: [PrepareRelease, Build]
 
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.PrepareRelease.outputs.branch }}
+
+      - name: Create release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="${{ needs.PrepareRelease.outputs.version }}"
+          tag="${{ needs.PrepareRelease.outputs.tag }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git tag -a "${tag}" -m "Release ${version}"
+          git push origin "${tag}"
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
 
