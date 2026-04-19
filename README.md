@@ -1,5 +1,7 @@
 # To Update to the latest cimgui version
 
+Latest version: 1.92.7
+
 1. git submodule update --init
 
 2. git submodule update --remote
