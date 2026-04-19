@@ -259,3 +259,4 @@ Session.vim
 .idea
 
 build/
+artifacts/

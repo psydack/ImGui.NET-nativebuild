@@ -140,6 +140,22 @@ git push origin v1.92.7
 
 Tags matching `vN.N` are treated as public releases by `version.json`.
 
+## Manual Release Workflow
+
+Use the `Manual Release` workflow from the GitHub Actions tab to update and release a new version.
+
+The workflow requires a version in `N.N.N` format, without the `v` prefix. The requested version must be greater than the version currently stored in `version.json`.
+
+When it runs, the workflow:
+
+1. Updates the `cimgui` submodule from the configured upstream branch.
+2. Verifies that `cimgui/imgui/imgui.h` reports the requested `IMGUI_VERSION`.
+3. Updates `version.json` and the current version line in this README.
+4. Creates and pushes an `update/<version>` branch.
+5. Creates and pushes the `v<version>` tag.
+6. Builds all CI artifacts.
+7. Creates a GitHub release named `v<version>` with versioned artifact names.
+
 ## CI
 
 GitHub Actions builds the native library for:
