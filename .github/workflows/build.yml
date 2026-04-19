@@ -112,22 +112,19 @@ jobs:
 
       - name: Rename win-x64 and win-x86 artifacts
         run: |
-          VERSION="${GITHUB_REF_NAME}"
-          mv win-x64/cimgui.dll "win-x64/cimgui.${VERSION}.win-x64.dll"
-          mv win-x86/cimgui.dll "win-x86/cimgui.${VERSION}.win-x86.dll"
-          mv win-ARM64/cimgui.dll "win-ARM64/cimgui.${VERSION}.win-arm64.dll"
-          mv ubuntu-latest-x64/cimgui.so "ubuntu-latest-x64/cimgui.${VERSION}.linux-x64.so"
-          mv macos-latest-x64/cimgui.dylib "macos-latest-x64/cimgui.${VERSION}.macos-universal.dylib"
+          mv win-x64/cimgui.dll win-x64/cimgui.win-x64.dll
+          mv win-x86/cimgui.dll win-x86/cimgui.win-x86.dll
+          mv win-ARM64/cimgui.dll win-ARM64/cimgui.win-arm64.dll
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ github.ref_name }}
           files: |
-            win-x64/cimgui.${{ github.ref_name }}.win-x64.dll
-            win-x86/cimgui.${{ github.ref_name }}.win-x86.dll
-            win-ARM64/cimgui.${{ github.ref_name }}.win-arm64.dll
+            win-x64/cimgui.win-x64.dll
+            win-x86/cimgui.win-x86.dll
+            win-ARM64/cimgui.win-arm64.dll
             JsonFiles/*
             win-x64-source/*
-            ubuntu-latest-x64/cimgui.${{ github.ref_name }}.linux-x64.so
-            macos-latest-x64/cimgui.${{ github.ref_name }}.macos-universal.dylib
+            ubuntu-latest-x64/cimgui.so
+            macos-latest-x64/cimgui.dylib

@@ -223,14 +223,13 @@ jobs:
         run: |
           set -euo pipefail
 
-          version="${{ needs.PrepareRelease.outputs.version }}"
           mkdir -p release-assets
 
-          cp "win-x64/cimgui.dll" "release-assets/cimgui.${version}.win-x64.dll"
-          cp "win-x86/cimgui.dll" "release-assets/cimgui.${version}.win-x86.dll"
-          cp "win-ARM64/cimgui.dll" "release-assets/cimgui.${version}.win-arm64.dll"
-          cp "ubuntu-latest-x64/cimgui.so" "release-assets/cimgui.${version}.linux-x64.so"
-          cp "macos-latest-x64/cimgui.dylib" "release-assets/cimgui.${version}.macos-universal.dylib"
+          cp "win-x64/cimgui.dll" "release-assets/cimgui.win-x64.dll"
+          cp "win-x86/cimgui.dll" "release-assets/cimgui.win-x86.dll"
+          cp "win-ARM64/cimgui.dll" "release-assets/cimgui.win-arm64.dll"
+          cp "ubuntu-latest-x64/cimgui.so" "release-assets/cimgui.so"
+          cp "macos-latest-x64/cimgui.dylib" "release-assets/cimgui.dylib"
           cp source-package/*.nupkg release-assets/
           cp JsonFiles/*.json release-assets/
 
