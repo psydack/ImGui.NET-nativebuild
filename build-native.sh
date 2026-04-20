@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 scriptPath="`dirname \"$0\"`"
 
@@ -42,8 +43,8 @@ if [ -f "$overrideCmake" ]; then
     cp "$overrideCmake" "$libPath/CMakeLists.txt"
 fi
 
-mkdir -p $libPath/build/$_CMakeBuildType
-pushd $libPath/build/$_CMakeBuildType
+mkdir -p "$libPath/build/$_CMakeBuildType"
+pushd "$libPath/build/$_CMakeBuildType"
 cmake ../.. -DCMAKE_OSX_ARCHITECTURES="$_CMakeOsxArchitectures" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DCMAKE_BUILD_TYPE=$_CMakeBuildType
 make
 popd

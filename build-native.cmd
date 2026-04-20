@@ -33,9 +33,11 @@ If NOT exist "%LIB_ROOT%\build\%BUILD_ARCH%" (
 )
 pushd "%LIB_ROOT%\build\%BUILD_ARCH%"
 cmake -DCMAKE_GENERATOR_PLATFORM=%BUILD_CMAKE_GENERATOR_PLATFORM% -DCMAKE_MSVC_RUNTIME_LIBRARY=%MSVC_RUNTIME% ..\..
+if errorlevel 1 exit /b 1
 
 echo Calling cmake --build . --config %BUILD_CONFIG%
 cmake --build . --config %BUILD_CONFIG%
+if errorlevel 1 exit /b 1
 popd
 
 :Success
