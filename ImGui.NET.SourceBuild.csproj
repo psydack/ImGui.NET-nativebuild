@@ -74,6 +74,26 @@
       <PackagePath>src/imgui/</PackagePath>
       <Pack>true</Pack>
     </Content>
+    <Content Include="$(MSBuildThisFileDirectory)cimgui/imgui/misc/freetype/imgui_freetype.cpp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackagePath>src/imgui/misc/freetype/</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)cimgui/imgui/misc/freetype/imgui_freetype.h">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackagePath>src/imgui/misc/freetype/</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)cimgui_config.h">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackagePath>src/</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)src/cimgui_assert.cpp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackagePath>src/</PackagePath>
+      <Pack>true</Pack>
+    </Content>
     <Content Include="ImGui.NET.SourceBuild.props">
       <Pack>true</Pack>
       <PackagePath>build</PackagePath>

@@ -72,6 +72,22 @@ jobs:
         # error can be fixed afterwards and job can be re-triggered
         continue-on-error: true
 
+      - name: Install FreeType (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install -y libfreetype-dev
+
+      - name: Install FreeType (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install freetype
+
+      - name: Install FreeType (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          arch="${{ matrix.architecture }}"
+          triplet="$(echo "$arch" | tr '[:upper:]' '[:lower:]')-windows-static"
+          vcpkg install "freetype:${triplet}"
+
       - name: Build all libraries ${{ github.event.inputs.ReleaseType || 'Release' }}
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
