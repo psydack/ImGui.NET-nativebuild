@@ -6,6 +6,7 @@ scriptPath="`dirname \"$0\"`"
 _CMakeBuildType=Debug
 _CMakeOsxArchitectures=
 _Lib=cimgui
+__UnprocessedBuildArgs=
 
 while :; do
     if [ $# -le 0 ]; then
@@ -43,7 +44,7 @@ if [ -f "$overrideCmake" ]; then
     cp "$overrideCmake" "$libPath/CMakeLists.txt"
 fi
 
-patchFile="$scriptPath/patches/${_LibName}.patch"
+patchFile="$scriptPath/patches/${_Lib}.patch"
 if [ -f "$patchFile" ] && git -C "$libPath" apply --check "$patchFile" >/dev/null 2>&1; then
     git -C "$libPath" apply "$patchFile"
 fi
