@@ -154,7 +154,7 @@ When it runs, the workflow:
 4. Creates and pushes an `update/<version>` branch.
 5. Builds all CI artifacts from that branch.
 6. Creates and pushes the `<version>` tag.
-7. Creates a GitHub release named `<version>` with script-compatible artifact names.
+7. Creates a GitHub release named `<version>` with only the script-compatible artifacts.
 
 ## CI
 

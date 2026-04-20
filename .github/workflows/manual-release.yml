@@ -230,8 +230,8 @@ jobs:
           cp "win-ARM64/cimgui.dll" "release-assets/cimgui.win-arm64.dll"
           cp "ubuntu-latest-x64/cimgui.so" "release-assets/cimgui.so"
           cp "macos-latest-x64/cimgui.dylib" "release-assets/cimgui.dylib"
-          cp source-package/*.nupkg release-assets/
-          cp JsonFiles/*.json release-assets/
+          cp "JsonFiles/definitions.json" "release-assets/definitions.json"
+          cp "JsonFiles/structs_and_enums.json" "release-assets/structs_and_enums.json"
 
           find release-assets -maxdepth 1 -type f -print | sort
 

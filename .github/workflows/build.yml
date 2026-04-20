@@ -124,7 +124,7 @@ jobs:
             win-x64/cimgui.win-x64.dll
             win-x86/cimgui.win-x86.dll
             win-ARM64/cimgui.win-arm64.dll
-            JsonFiles/*
-            win-x64-source/*
+            JsonFiles/definitions.json
+            JsonFiles/structs_and_enums.json
             ubuntu-latest-x64/cimgui.so
             macos-latest-x64/cimgui.dylib
