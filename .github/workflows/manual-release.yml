@@ -21,7 +21,7 @@ jobs:
       commit_sha: ${{ steps.prepare.outputs.commit_sha }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: recursive
@@ -156,7 +156,7 @@ jobs:
             architecture: ARM64
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ needs.PrepareRelease.outputs.branch }}
@@ -164,7 +164,7 @@ jobs:
 
       - name: Setup .NET
         if: matrix.os == 'windows-latest'
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
 
@@ -174,7 +174,7 @@ jobs:
         shell: bash
 
       - name: Upload source package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.os == 'windows-latest' && matrix.architecture == 'x64'
         with:
           name: source-package
@@ -189,26 +189,94 @@ jobs:
           fi
         shell: bash
 
+      - name: Stage win-${{ matrix.architecture }} artifacts
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          arch="${{ matrix.architecture }}"
+          suffix="$(echo "$arch" | tr '[:upper:]' '[:lower:]')"
+          mkdir -p "artifacts/win-${suffix}"
+
+          for lib in cimgui cimplot cimplot3d cimnodes cimnodes_r cimguizmo cimguizmo_quat cimCTE; do
+            src="${lib}/build/${arch}/Release/${lib}.dll"
+            if [ ! -f "$src" ]; then
+              echo "Missing expected artifact: $src" >&2
+              exit 1
+            fi
+
+            cp "$src" "artifacts/win-${suffix}/${lib}.win-${suffix}.dll"
+          done
+
+      - name: Stage ${{ matrix.os }} artifacts
+        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            platform="macos-universal"
+            extension="dylib"
+          else
+            platform="linux-x64"
+            extension="so"
+          fi
+
+          mkdir -p "artifacts/${platform}"
+
+          for lib in cimgui cimplot cimplot3d cimnodes cimnodes_r cimguizmo cimguizmo_quat cimCTE; do
+            src="${lib}/build/Release/${lib}.${extension}"
+            if [ ! -f "$src" ]; then
+              echo "Missing expected artifact: $src" >&2
+              exit 1
+            fi
+
+            cp "$src" "artifacts/${platform}/${lib}.${platform}.${extension}"
+          done
+
+      - name: Stage Json files
+        if: matrix.os == 'windows-latest' && matrix.architecture == 'x64'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p artifacts/json
+
+          for lib in cimgui cimplot cimplot3d cimnodes cimnodes_r cimguizmo cimguizmo_quat cimCTE; do
+            src_dir="${lib}/generator/output"
+            if [ ! -d "$src_dir" ]; then
+              echo "Missing expected json directory: $src_dir" >&2
+              exit 1
+            fi
+
+            mkdir -p "artifacts/json/${lib}"
+            cp "${src_dir}"/*.json "artifacts/json/${lib}/"
+          done
+
       - name: Upload win-${{ matrix.architecture }} Release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.os == 'windows-latest'
         with:
           name: win-${{ matrix.architecture }}
-          path: cimgui/build/${{ matrix.architecture }}/Release/*
+          if-no-files-found: error
+          path: artifacts/win-*/**
 
       - name: Upload ${{ matrix.os }} Release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
         with:
           name: ${{ matrix.os }}-x64
-          path: cimgui/build/Release/*
+          if-no-files-found: error
+          path: artifacts/*/**
 
       - name: Upload Json files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.os == 'windows-latest' && matrix.architecture == 'x64'
         with:
           name: JsonFiles
-          path: cimgui/generator/output/*.json
+          if-no-files-found: error
+          path: artifacts/json/**
 
   CreateRelease:
     runs-on: ubuntu-latest
@@ -216,7 +284,7 @@ jobs:
 
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
 
       - name: Prepare release assets
         shell: bash
@@ -225,17 +293,38 @@ jobs:
 
           mkdir -p release-assets
 
-          cp "win-x64/cimgui.dll" "release-assets/cimgui.win-x64.dll"
-          cp "win-x86/cimgui.dll" "release-assets/cimgui.win-x86.dll"
-          cp "win-ARM64/cimgui.dll" "release-assets/cimgui.win-arm64.dll"
-          cp "ubuntu-latest-x64/cimgui.so" "release-assets/cimgui.so"
-          cp "macos-latest-x64/cimgui.dylib" "release-assets/cimgui.dylib"
-          cp "JsonFiles/definitions.json" "release-assets/definitions.json"
-          cp "JsonFiles/structs_and_enums.json" "release-assets/structs_and_enums.json"
+          for lib in cimgui cimplot cimplot3d cimnodes cimnodes_r cimguizmo cimguizmo_quat cimCTE; do
+            mkdir -p "release-assets/${lib}"
+
+            cp "win-x64/win-x64/${lib}.win-x64.dll" "release-assets/${lib}/"
+            cp "win-x86/win-x86/${lib}.win-x86.dll" "release-assets/${lib}/"
+            cp "win-ARM64/win-arm64/${lib}.win-arm64.dll" "release-assets/${lib}/"
+            cp "ubuntu-latest-x64/linux-x64/${lib}.linux-x64.so" "release-assets/${lib}/"
+            cp "macos-latest-x64/macos-universal/${lib}.macos-universal.dylib" "release-assets/${lib}/"
+
+            if [ -d "JsonFiles/json/${lib}" ]; then
+              cp "JsonFiles/json/${lib}"/*.json "release-assets/${lib}/"
+            fi
+
+            (
+              cd "release-assets"
+              zip -r "${lib}.zip" "${lib}"
+            )
+
+            if [ "$lib" = "cimgui" ]; then
+              cp "release-assets/${lib}/cimgui.win-x64.dll" "release-assets/cimgui.win-x64.dll"
+              cp "release-assets/${lib}/cimgui.win-x86.dll" "release-assets/cimgui.win-x86.dll"
+              cp "release-assets/${lib}/cimgui.win-arm64.dll" "release-assets/cimgui.win-arm64.dll"
+              cp "release-assets/${lib}/cimgui.linux-x64.so" "release-assets/cimgui.so"
+              cp "release-assets/${lib}/cimgui.macos-universal.dylib" "release-assets/cimgui.dylib"
+              cp "release-assets/${lib}/definitions.json" "release-assets/definitions.json"
+              cp "release-assets/${lib}/structs_and_enums.json" "release-assets/structs_and_enums.json"
+            fi
+          done
 
           find release-assets -maxdepth 1 -type f -print | sort
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ needs.PrepareRelease.outputs.branch }}
@@ -267,9 +356,17 @@ jobs:
           fi
 
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.PrepareRelease.outputs.tag }}
           name: ${{ needs.PrepareRelease.outputs.tag }}
           fail_on_unmatched_files: true
-          files: release-assets/*
+          files: |
+            release-assets/*.zip
+            release-assets/cimgui.win-x64.dll
+            release-assets/cimgui.win-x86.dll
+            release-assets/cimgui.win-arm64.dll
+            release-assets/cimgui.so
+            release-assets/cimgui.dylib
+            release-assets/definitions.json
+            release-assets/structs_and_enums.json

@@ -4,6 +4,8 @@
     <TargetFrameworks>net7.0</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -75,6 +77,10 @@
     <Content Include="ImGui.NET.SourceBuild.props">
       <Pack>true</Pack>
       <PackagePath>build</PackagePath>
+    </Content>
+    <Content Include="README.md">
+      <Pack>true</Pack>
+      <PackagePath>\</PackagePath>
     </Content>
   </ItemGroup>
 
