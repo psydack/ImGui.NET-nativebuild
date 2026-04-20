@@ -10,7 +10,7 @@ This repo builds the native `cimgui` shared library (`.dll`/`.so`/`.dylib`) used
 
 **Windows (builds `cimgui/build/<ARCH>/<CONFIG>/cimgui.dll`):**
 ```cmd
-build-native.cmd [Release|Debug] [x64|x86|ARM64]
+build-native.cmd [Release|Debug] [x64|x86|ARM64|ARM]
 ```
 
 **Linux/macOS (builds `cimgui/build/<CONFIG>/cimgui.so` or `.dylib`):**
@@ -28,8 +28,10 @@ dotnet pack -c Release ImGui.NET.SourceBuild.csproj
 
 1. `git submodule update --init` then `git submodule update --remote` to pull the latest cimgui.
 2. Update `version.json` with the new version string (format: `1.XX.Y`).
-3. Commit and push to master (triggers CI).
-4. To cut a release: `git tag -a vN.N -m "..."` then `git push origin vN.N` — the CI workflow creates a GitHub release with all platform binaries automatically.
+3. Commit and push to main (triggers CI).
+4. To cut a release: `git tag -a 1.XX.Y -m "..."` then `git push origin 1.XX.Y` — tags matching `N.N.N` or `vN.N.N` trigger a GitHub release with all platform binaries.
+
+**Preferred: use the `Manual Release` workflow** from the GitHub Actions tab. It takes a version in `N.N.N` format (no `v` prefix), updates the submodule, verifies `IMGUI_VERSION` in `cimgui/imgui/imgui.h`, bumps `version.json`, creates an `update/<version>` branch, builds all artifacts, tags, and publishes the release automatically.
 
 ## CI Matrix
 
@@ -42,4 +44,4 @@ The NuGet package is only built/published from the `windows-latest / x64` job. U
 
 ## Versioning
 
-Version is managed by Nerdbank.GitVersioning via `version.json`. The `publicReleaseRefSpec` triggers a public release for tags matching `vN.N`.
+Version is managed by Nerdbank.GitVersioning via `version.json`. The `publicReleaseRefSpec` triggers a public release for tags matching `N.N.N` or `vN.N.N`.
