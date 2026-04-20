@@ -11,19 +11,19 @@
 [submodule "cimnodes_r"]
 	path = cimnodes_r
 	url = https://github.com/psydack/cimnodes_r
-	branch = unity-native-build
+	branch = master
 [submodule "cimguizmo"]
 	path = cimguizmo
 	url = https://github.com/cimgui/cimguizmo
 [submodule "cimguizmo_quat"]
 	path = cimguizmo_quat
 	url = https://github.com/psydack/cimguizmo_quat
-	branch = unity-native-build
+	branch = master
 [submodule "cimCTE"]
 	path = cimCTE
 	url = https://github.com/psydack/cimCTE
-	branch = unity-native-build
+	branch = main_goossens
 [submodule "cimplot3d"]
 	path = cimplot3d
 	url = https://github.com/psydack/cimplot3d
-	branch = unity-native-build
+	branch = main

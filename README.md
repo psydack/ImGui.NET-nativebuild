@@ -16,12 +16,12 @@ Current submodule references used by this repository:
 | --- | --- |
 | `cimgui` | `1.92.7dock-3-ga444aa6` |
 | `cimplot` | `v1.0-2-g97353b8` |
-| `cimplot3d` | `v0.4-2-g9a99774` |
+| `cimplot3d` | `v0.4-5-gb7fd725` |
 | `cimnodes` | `v0.4-24-g56d2ae9` |
-| `cimnodes_r` | `a6b20dd` |
+| `cimnodes_r` | `9f2de6d` |
 | `cimguizmo` | `2becc1a` |
-| `cimguizmo_quat` | `v3.0auto-22-gef71d07` |
-| `cimCTE` | `e8854f9` |
+| `cimguizmo_quat` | `v3.0auto-25-gac735e4` |
+| `cimCTE` | `f36cc28` |
 
 ## Repository Layout
 
