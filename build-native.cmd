@@ -6,7 +6,7 @@ set "BUILD_ARCH=x64"
 set "BUILD_CMAKE_GENERATOR_PLATFORM=x64"
 set "MSVC_RUNTIME=MultiThreadedDebug"
 set "BUILD_LIB=cimgui"
-set "BUILD_CXX_WARNING_FLAGS=/wd4190 /wd4244 /wd4305 /wd4715 /wd4996"
+set "BUILD_CXX_WARNING_FLAGS=/EHsc /wd4190 /wd4244 /wd4305 /wd4715 /wd4996"
 
 :ArgLoop
 if [%~1] == [] goto Build
