@@ -4,6 +4,8 @@ Build scripts and packaging metadata for the native `cimgui` library used by ImG
 
 This repository builds platform-specific native binaries (`.dll`, `.so`, and `.dylib`) from the `cimgui` submodule. It also produces the `ImGui.NET.SourceBuild` NuGet package, which bundles the `cimgui` and dear imgui C/C++ sources for projects that need to compile them directly, such as WebAssembly/Emscripten targets.
 
+This project is also used to simplify and support the migration of [`ImGui.NET.4Unity`](https://github.com/psydack/ImGui.NET.4Unity).
+
 Current version: `1.92.7`
 
 ## Repository Layout
