@@ -1,23 +1,25 @@
 name: CI
 
+permissions:
+  contents: write
+
 # Controls when the workflow will run
 on:
-  create:
-
-  # Triggers the workflow on push or pull request events but only for the master branch
+  # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ master ]
+    branches: [main]
+    tags: ["*"]
 
   pull_request:
-    branches: [ master ]
+    branches: [main]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
       ReleaseType:
-        description: 'Release or Debug'
+        description: "Release or Debug"
         required: true
-        default: 'Release'
+        default: "Release"
 
 jobs:
   Build:
@@ -59,7 +61,7 @@ jobs:
           path: bin\Packages\Release\*.nupkg
 
       - name: Publish untagged source package to MyGet
-        if: matrix.os == 'windows-latest' && github.ref == 'refs/heads/master' && matrix.architecture == 'x64'
+        if: matrix.os == 'windows-latest' && github.ref == 'refs/heads/main' && matrix.architecture == 'x64'
         run: dotnet nuget push bin\Packages\Release\*.nupkg -s https://www.myget.org/F/mellinoe/api/v3/index.json --api-key ${{secrets.MYGET_KEY}}
         # error can be fixed afterwards and job can be re-triggered
         continue-on-error: true
@@ -71,12 +73,12 @@ jobs:
         continue-on-error: true
 
       - name: Build ${{ github.event.inputs.ReleaseType || 'Release' }}
-        run:  |
-              if [ "$RUNNER_OS" == "Windows" ]; then
-                ./ci-build.cmd ${{ github.event.inputs.ReleaseType || 'Release' }} ${{ matrix.architecture }}
-              else
-                ./ci-build.sh ${{ github.event.inputs.ReleaseType || 'Release' }}
-              fi
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            ./ci-build.cmd ${{ github.event.inputs.ReleaseType || 'Release' }} ${{ matrix.architecture }}
+          else
+            ./ci-build.sh ${{ github.event.inputs.ReleaseType || 'Release' }}
+          fi
         shell: bash
 
       - name: Upload win-${{ matrix.architecture }} ${{ github.event.inputs.ReleaseType || 'Release' }}
@@ -117,10 +119,12 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
+          name: ${{ github.ref_name }}
           files: |
             win-x64/cimgui.win-x64.dll
             win-x86/cimgui.win-x86.dll
             win-ARM64/cimgui.win-arm64.dll
-            JsonFiles/*
+            JsonFiles/definitions.json
+            JsonFiles/structs_and_enums.json
             ubuntu-latest-x64/cimgui.so
             macos-latest-x64/cimgui.dylib

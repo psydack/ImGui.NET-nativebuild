@@ -1,0 +1,275 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to update and release. Example: 1.92.8"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  PrepareRelease:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.prepare.outputs.version }}
+      tag: ${{ steps.prepare.outputs.tag }}
+      branch: ${{ steps.prepare.outputs.branch }}
+      commit_sha: ${{ steps.prepare.outputs.commit_sha }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Validate requested version
+        id: validate
+        shell: pwsh
+        run: |
+          $requested = "${{ inputs.version }}"
+          if ($requested -notmatch '^\d+\.\d+\.\d+$') {
+            throw "Version must use the N.N.N format without a v prefix. Received: '$requested'."
+          }
+
+          $versionJson = Get-Content version.json -Raw
+          $match = [regex]::Match($versionJson, '"version"\s*:\s*"(?<version>\d+\.\d+\.\d+)"')
+          if (-not $match.Success) {
+            throw "Could not find the current version in version.json."
+          }
+
+          $current = $match.Groups["version"].Value
+          if ([version]$requested -le [version]$current) {
+            throw "Requested version $requested must be greater than current version $current."
+          }
+
+          "requested=$requested" >> $env:GITHUB_OUTPUT
+          "current=$current" >> $env:GITHUB_OUTPUT
+
+      - name: Check branch and tag availability
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="${{ steps.validate.outputs.requested }}"
+          branch="update/${version}"
+          tag="${version}"
+
+          if git ls-remote --exit-code --heads origin "${branch}" >/dev/null 2>&1; then
+            echo "Branch ${branch} already exists on origin." >&2
+            exit 1
+          fi
+
+          if git ls-remote --exit-code --tags origin "${tag}" >/dev/null 2>&1; then
+            echo "Tag ${tag} already exists on origin." >&2
+            exit 1
+          fi
+
+      - name: Update cimgui submodule
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git submodule update --init --recursive
+          git submodule update --remote cimgui
+          git -C cimgui submodule update --init
+
+      - name: Verify cimgui version
+        shell: pwsh
+        run: |
+          $requested = "${{ steps.validate.outputs.requested }}"
+          $line = Select-String -Path "cimgui/imgui/imgui.h" -Pattern '#define\s+IMGUI_VERSION\s+"(?<version>[^"]+)"'
+          if (-not $line) {
+            throw "Could not find IMGUI_VERSION in cimgui/imgui/imgui.h."
+          }
+
+          $actual = $line.Matches[0].Groups["version"].Value
+          if ($actual -ne $requested) {
+            throw "Updated cimgui points to imgui version '$actual', expected '$requested'."
+          }
+
+      - name: Update repository version files
+        shell: pwsh
+        run: |
+          $requested = "${{ steps.validate.outputs.requested }}"
+
+          $versionJson = Get-Content version.json -Raw
+          $versionJson = [regex]::Replace($versionJson, '"version"\s*:\s*"[^"]+"', "`"version`": `"$requested`"", 1)
+          Set-Content -Path version.json -Value $versionJson -NoNewline
+
+          $readme = Get-Content README.md -Raw
+          if ($readme -match 'Current version:\s*`[^`]+`') {
+            $readme = [regex]::Replace($readme, 'Current version:\s*`[^`]+`', "Current version: ``$requested``", 1)
+          } else {
+            $replacement = '$1' + "Current version: ``$requested```n`n"
+            $readme = [regex]::Replace($readme, '(?s)(# ImGui\.NET Native Build.*?\r?\n\r?\n)', $replacement, 1)
+          }
+          Set-Content -Path README.md -Value $readme -NoNewline
+
+      - name: Commit branch and tag
+        id: prepare
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="${{ steps.validate.outputs.requested }}"
+          branch="update/${version}"
+          tag="${version}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git switch -c "${branch}"
+          git add README.md version.json cimgui
+
+          if git diff --cached --quiet; then
+            echo "No update changes were produced." >&2
+            exit 1
+          fi
+
+          git commit -m "Update cimgui to ${version}"
+          git push origin "HEAD:${branch}"
+
+          commit_sha="$(git rev-parse HEAD)"
+
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "branch=${branch}" >> "$GITHUB_OUTPUT"
+          echo "commit_sha=${commit_sha}" >> "$GITHUB_OUTPUT"
+
+  Build:
+    needs: [PrepareRelease]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+          - os: ubuntu-latest
+          - os: windows-latest
+            architecture: x64
+          - os: windows-latest
+            architecture: x86
+          - os: windows-latest
+            architecture: ARM64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.PrepareRelease.outputs.branch }}
+          submodules: recursive
+
+      - name: Setup .NET
+        if: matrix.os == 'windows-latest'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build source package
+        if: matrix.os == 'windows-latest' && matrix.architecture == 'x64'
+        run: dotnet pack -c Release ImGui.NET.SourceBuild.csproj
+        shell: bash
+
+      - name: Upload source package
+        uses: actions/upload-artifact@v4
+        if: matrix.os == 'windows-latest' && matrix.architecture == 'x64'
+        with:
+          name: source-package
+          path: bin/Packages/Release/*.nupkg
+
+      - name: Build Release
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            ./ci-build.cmd Release ${{ matrix.architecture }}
+          else
+            ./ci-build.sh Release
+          fi
+        shell: bash
+
+      - name: Upload win-${{ matrix.architecture }} Release
+        uses: actions/upload-artifact@v4
+        if: matrix.os == 'windows-latest'
+        with:
+          name: win-${{ matrix.architecture }}
+          path: cimgui/build/${{ matrix.architecture }}/Release/*
+
+      - name: Upload ${{ matrix.os }} Release
+        uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+        with:
+          name: ${{ matrix.os }}-x64
+          path: cimgui/build/Release/*
+
+      - name: Upload Json files
+        uses: actions/upload-artifact@v4
+        if: matrix.os == 'windows-latest' && matrix.architecture == 'x64'
+        with:
+          name: JsonFiles
+          path: cimgui/generator/output/*.json
+
+  CreateRelease:
+    runs-on: ubuntu-latest
+    needs: [PrepareRelease, Build]
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Prepare release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p release-assets
+
+          cp "win-x64/cimgui.dll" "release-assets/cimgui.win-x64.dll"
+          cp "win-x86/cimgui.dll" "release-assets/cimgui.win-x86.dll"
+          cp "win-ARM64/cimgui.dll" "release-assets/cimgui.win-arm64.dll"
+          cp "ubuntu-latest-x64/cimgui.so" "release-assets/cimgui.so"
+          cp "macos-latest-x64/cimgui.dylib" "release-assets/cimgui.dylib"
+          cp "JsonFiles/definitions.json" "release-assets/definitions.json"
+          cp "JsonFiles/structs_and_enums.json" "release-assets/structs_and_enums.json"
+
+          find release-assets -maxdepth 1 -type f -print | sort
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.PrepareRelease.outputs.branch }}
+
+      - name: Create release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="${{ needs.PrepareRelease.outputs.version }}"
+          tag="${{ needs.PrepareRelease.outputs.tag }}"
+          expected_commit="$(git rev-parse HEAD)"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "refs/tags/${tag}:refs/tags/${tag}" || true
+
+          if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+            existing_commit="$(git rev-parse "${tag}^{commit}")"
+            if [ "${existing_commit}" != "${expected_commit}" ]; then
+              echo "Tag ${tag} already exists at ${existing_commit}, expected ${expected_commit}." >&2
+              exit 1
+            fi
+
+            echo "Tag ${tag} already exists at ${expected_commit}; continuing."
+          else
+            git tag -a "${tag}" -m "Release ${version}"
+            git push origin "${tag}"
+          fi
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.PrepareRelease.outputs.tag }}
+          name: ${{ needs.PrepareRelease.outputs.tag }}
+          fail_on_unmatched_files: true
+          files: release-assets/*
