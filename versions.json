@@ -1,0 +1,9 @@
+{
+  "cimplot":       "0.17.0",
+  "cimplot3d":     "0.4.0",
+  "cimnodes":      "0.5.0",
+  "cimnodes_r":    "latest",
+  "cimguizmo":     "latest",
+  "cimguizmo_quat":"latest",
+  "cimCTE":        "latest"
+}

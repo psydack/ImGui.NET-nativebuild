@@ -2,3 +2,24 @@
 	path = cimgui
 	url = https://github.com/cimgui/cimgui
 	branch = docking_inter
+[submodule "cimplot"]
+	path = cimplot
+	url = https://github.com/cimgui/cimplot
+[submodule "cimnodes"]
+	path = cimnodes
+	url = https://github.com/cimgui/cimnodes
+[submodule "cimnodes_r"]
+	path = cimnodes_r
+	url = https://github.com/cimgui/cimnodes_r
+[submodule "cimguizmo"]
+	path = cimguizmo
+	url = https://github.com/cimgui/cimguizmo
+[submodule "cimguizmo_quat"]
+	path = cimguizmo_quat
+	url = https://github.com/cimgui/cimguizmo_quat
+[submodule "cimCTE"]
+	path = cimCTE
+	url = https://github.com/cimgui/cimCTE
+[submodule "cimplot3d"]
+	path = cimplot3d
+	url = https://github.com/cimgui/cimplot3d

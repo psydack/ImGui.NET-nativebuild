@@ -72,7 +72,7 @@ jobs:
         # error can be fixed afterwards and job can be re-triggered
         continue-on-error: true
 
-      - name: Build ${{ github.event.inputs.ReleaseType || 'Release' }}
+      - name: Build all libraries ${{ github.event.inputs.ReleaseType || 'Release' }}
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
             ./ci-build.cmd ${{ github.event.inputs.ReleaseType || 'Release' }} ${{ matrix.architecture }}
@@ -86,21 +86,53 @@ jobs:
         if: matrix.os == 'windows-latest'
         with:
           name: win-${{ matrix.architecture }}
-          path: cimgui\build\${{ matrix.architecture }}\${{ github.event.inputs.ReleaseType || 'Release' }}\*
+          path: |
+            cimgui/build/${{ matrix.architecture }}/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dll
+            cimplot/build/${{ matrix.architecture }}/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dll
+            cimplot3d/build/${{ matrix.architecture }}/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dll
+            cimnodes/build/${{ matrix.architecture }}/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dll
+            cimnodes_r/build/${{ matrix.architecture }}/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dll
+            cimguizmo/build/${{ matrix.architecture }}/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dll
+            cimguizmo_quat/build/${{ matrix.architecture }}/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dll
+            cimCTE/build/${{ matrix.architecture }}/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dll
 
       - name: Upload ${{ matrix.os }} ${{ github.event.inputs.ReleaseType || 'Release' }}
         uses: actions/upload-artifact@v4
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
         with:
           name: ${{ matrix.os }}-x64
-          path: cimgui/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*
+          path: |
+            cimgui/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.so
+            cimgui/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dylib
+            cimplot/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.so
+            cimplot/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dylib
+            cimplot3d/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.so
+            cimplot3d/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dylib
+            cimnodes/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.so
+            cimnodes/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dylib
+            cimnodes_r/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.so
+            cimnodes_r/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dylib
+            cimguizmo/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.so
+            cimguizmo/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dylib
+            cimguizmo_quat/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.so
+            cimguizmo_quat/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dylib
+            cimCTE/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.so
+            cimCTE/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*.dylib
 
       - name: Upload Json Files
         uses: actions/upload-artifact@v4
         if: matrix.os == 'windows-latest' && matrix.architecture == 'x64'
         with:
           name: JsonFiles
-          path: cimgui\generator\output\*.json
+          path: |
+            cimgui/generator/output/*.json
+            cimplot/generator/output/*.json
+            cimplot3d/generator/output/*.json
+            cimnodes/generator/output/*.json
+            cimnodes_r/generator/output/*.json
+            cimguizmo/generator/output/*.json
+            cimguizmo_quat/generator/output/*.json
+            cimCTE/generator/output/*.json
 
   CreateReleaseOnTagCreate:
     runs-on: ubuntu-latest
@@ -110,21 +142,25 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
 
-      - name: Rename win-x64 and win-x86 artifacts
+      - name: Rename win artifacts
         run: |
-          mv win-x64/cimgui.dll win-x64/cimgui.win-x64.dll
-          mv win-x86/cimgui.dll win-x86/cimgui.win-x86.dll
-          mv win-ARM64/cimgui.dll win-ARM64/cimgui.win-arm64.dll
+          for lib in cimgui cimplot cimplot3d cimnodes cimnodes_r cimguizmo cimguizmo_quat cimCTE; do
+            for arch in x64 x86 ARM64; do
+              suffix=$(echo $arch | tr '[:upper:]' '[:lower:]')
+              src="win-${arch}/${lib}.dll"
+              dst="win-${arch}/${lib}.win-${suffix}.dll"
+              if [ -f "$src" ]; then mv "$src" "$dst"; fi
+            done
+          done
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ github.ref_name }}
           files: |
-            win-x64/cimgui.win-x64.dll
-            win-x86/cimgui.win-x86.dll
-            win-ARM64/cimgui.win-arm64.dll
-            JsonFiles/definitions.json
-            JsonFiles/structs_and_enums.json
-            ubuntu-latest-x64/cimgui.so
-            macos-latest-x64/cimgui.dylib
+            win-x64/*.win-x64.dll
+            win-x86/*.win-x86.dll
+            win-ARM64/*.win-arm64.dll
+            JsonFiles/*
+            ubuntu-latest-x64/*.so
+            macos-latest-x64/*.dylib
