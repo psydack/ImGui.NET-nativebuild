@@ -8,6 +8,21 @@ This project is also used to simplify and support the migration of [`ImGui.NET.4
 
 Current version: `1.92.7`
 
+## External Project Versions
+
+Current submodule references used by this repository:
+
+| Project | Version/Ref |
+| --- | --- |
+| `cimgui` | `1.92.7dock-3-ga444aa6` |
+| `cimplot` | `v1.0-2-g97353b8` |
+| `cimplot3d` | `v0.4-1-g11807cf` |
+| `cimnodes` | `v0.4-24-g56d2ae9` |
+| `cimnodes_r` | `3eb33b1` |
+| `cimguizmo` | `2becc1a` |
+| `cimguizmo_quat` | `v3.0auto-21-gb14e730` |
+| `cimCTE` | `1297e94` |
+
 ## Repository Layout
 
 - `cimgui/`: Git submodule for `cimgui`, tracking the `docking_inter` branch.
