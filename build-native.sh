@@ -43,6 +43,11 @@ if [ -f "$overrideCmake" ]; then
     cp "$overrideCmake" "$libPath/CMakeLists.txt"
 fi
 
+patchFile="$scriptPath/patches/${_LibName}.patch"
+if [ -f "$patchFile" ] && git -C "$libPath" apply --check "$patchFile" >/dev/null 2>&1; then
+    git -C "$libPath" apply "$patchFile"
+fi
+
 mkdir -p "$libPath/build/$_CMakeBuildType"
 pushd "$libPath/build/$_CMakeBuildType"
 cmake ../.. -DCMAKE_OSX_ARCHITECTURES="$_CMakeOsxArchitectures" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DCMAKE_BUILD_TYPE=$_CMakeBuildType
