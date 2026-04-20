@@ -195,8 +195,8 @@ jobs:
             cp "ubuntu-latest-x64/linux-x64/${lib}.linux-x64.so" "release-assets/${lib}/"
             cp "macos-latest-x64/macos-universal/${lib}.macos-universal.dylib" "release-assets/${lib}/"
 
-            if [ -d "JsonFiles/json/${lib}" ]; then
-              cp "JsonFiles/json/${lib}"/*.json "release-assets/${lib}/"
+            if [ -d "JsonFiles/${lib}" ]; then
+              cp "JsonFiles/${lib}"/*.json "release-assets/${lib}/"
             fi
 
             (
