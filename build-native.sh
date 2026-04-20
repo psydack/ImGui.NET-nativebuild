@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 scriptPath="`dirname \"$0\"`"
-cimguiPath=$scriptPath/cimgui
 
 _CMakeBuildType=Debug
 _CMakeOsxArchitectures=
+_Lib=cimgui
+__UnprocessedBuildArgs=
 
 while :; do
     if [ $# -le 0 ]; then
@@ -23,6 +25,10 @@ while :; do
             _CMakeOsxArchitectures=$2
             shift
             ;;
+        --lib)
+            _Lib=$2
+            shift
+            ;;
         *)
             __UnprocessedBuildArgs="$__UnprocessedBuildArgs $1"
     esac
@@ -30,8 +36,21 @@ while :; do
     shift
 done
 
-mkdir -p $cimguiPath/build/$_CMakeBuildType
-pushd $cimguiPath/build/$_CMakeBuildType
+libPath=$scriptPath/$_Lib
+
+# Inject override CMakeLists.txt if the lib doesn't have its own
+overrideCmake=$scriptPath/cmake/$_Lib/CMakeLists.txt
+if [ -f "$overrideCmake" ]; then
+    cp "$overrideCmake" "$libPath/CMakeLists.txt"
+fi
+
+patchFile="$scriptPath/patches/${_Lib}.patch"
+if [ -f "$patchFile" ] && git -C "$libPath" apply --check "$patchFile" >/dev/null 2>&1; then
+    git -C "$libPath" apply "$patchFile"
+fi
+
+mkdir -p "$libPath/build/$_CMakeBuildType"
+pushd "$libPath/build/$_CMakeBuildType"
 cmake ../.. -DCMAKE_OSX_ARCHITECTURES="$_CMakeOsxArchitectures" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DCMAKE_BUILD_TYPE=$_CMakeBuildType
 make
 popd

@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 scriptPath="`dirname \"$0\"`"
 RTYPE="${1}"
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  $scriptPath/build-native.sh ${RTYPE} -osx-architectures 'arm64;x86_64'
-else
-  $scriptPath/build-native.sh ${RTYPE}
-fi
+LIBS="cimgui cimplot cimplot3d cimnodes cimnodes_r cimguizmo cimguizmo_quat cimCTE"
+
+for lib in $LIBS; do
+    echo "=== Building $lib ==="
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        "$scriptPath/build-native.sh" "${RTYPE}" --lib "$lib" -osx-architectures 'arm64;x86_64'
+    else
+        "$scriptPath/build-native.sh" "${RTYPE}" --lib "$lib"
+    fi
+done

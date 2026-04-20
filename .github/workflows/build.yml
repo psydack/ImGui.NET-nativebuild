@@ -72,7 +72,7 @@ jobs:
         # error can be fixed afterwards and job can be re-triggered
         continue-on-error: true
 
-      - name: Build ${{ github.event.inputs.ReleaseType || 'Release' }}
+      - name: Build all libraries ${{ github.event.inputs.ReleaseType || 'Release' }}
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
             ./ci-build.cmd ${{ github.event.inputs.ReleaseType || 'Release' }} ${{ matrix.architecture }}
@@ -81,26 +81,96 @@ jobs:
           fi
         shell: bash
 
+      - name: Stage win-${{ matrix.architecture }} artifacts
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          config="${{ github.event.inputs.ReleaseType || 'Release' }}"
+          arch="${{ matrix.architecture }}"
+          suffix="$(echo "$arch" | tr '[:upper:]' '[:lower:]')"
+          mkdir -p "artifacts/win-${suffix}"
+
+          for lib in cimgui cimplot cimplot3d cimnodes cimnodes_r cimguizmo cimguizmo_quat cimCTE; do
+            src="${lib}/build/${arch}/${config}/${lib}.dll"
+            if [ ! -f "$src" ]; then
+              echo "Missing expected artifact: $src" >&2
+              exit 1
+            fi
+
+            cp "$src" "artifacts/win-${suffix}/${lib}.win-${suffix}.dll"
+          done
+
+      - name: Stage ${{ matrix.os }} artifacts
+        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          config="${{ github.event.inputs.ReleaseType || 'Release' }}"
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            platform="macos-universal"
+            extension="dylib"
+          else
+            platform="linux-x64"
+            extension="so"
+          fi
+
+          mkdir -p "artifacts/${platform}"
+
+          for lib in cimgui cimplot cimplot3d cimnodes cimnodes_r cimguizmo cimguizmo_quat cimCTE; do
+            src="${lib}/build/${config}/${lib}.${extension}"
+            if [ ! -f "$src" ]; then
+              echo "Missing expected artifact: $src" >&2
+              exit 1
+            fi
+
+            cp "$src" "artifacts/${platform}/${lib}.${platform}.${extension}"
+          done
+
+      - name: Stage Json files
+        if: matrix.os == 'windows-latest' && matrix.architecture == 'x64'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p artifacts/json
+
+          for lib in cimgui cimplot cimplot3d cimnodes cimnodes_r cimguizmo cimguizmo_quat cimCTE; do
+            src_dir="${lib}/generator/output"
+            if [ ! -d "$src_dir" ]; then
+              echo "Missing expected json directory: $src_dir" >&2
+              exit 1
+            fi
+
+            mkdir -p "artifacts/json/${lib}"
+            cp "${src_dir}"/*.json "artifacts/json/${lib}/"
+          done
+
       - name: Upload win-${{ matrix.architecture }} ${{ github.event.inputs.ReleaseType || 'Release' }}
         uses: actions/upload-artifact@v4
         if: matrix.os == 'windows-latest'
         with:
           name: win-${{ matrix.architecture }}
-          path: cimgui\build\${{ matrix.architecture }}\${{ github.event.inputs.ReleaseType || 'Release' }}\*
+          if-no-files-found: error
+          path: artifacts/win-*/**
 
       - name: Upload ${{ matrix.os }} ${{ github.event.inputs.ReleaseType || 'Release' }}
         uses: actions/upload-artifact@v4
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
         with:
           name: ${{ matrix.os }}-x64
-          path: cimgui/build/${{ github.event.inputs.ReleaseType || 'Release' }}/*
+          if-no-files-found: error
+          path: artifacts/*/**
 
       - name: Upload Json Files
         uses: actions/upload-artifact@v4
         if: matrix.os == 'windows-latest' && matrix.architecture == 'x64'
         with:
           name: JsonFiles
-          path: cimgui\generator\output\*.json
+          if-no-files-found: error
+          path: artifacts/json/**
 
   CreateReleaseOnTagCreate:
     runs-on: ubuntu-latest
@@ -110,21 +180,53 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
 
-      - name: Rename win-x64 and win-x86 artifacts
+      - name: Prepare release assets
         run: |
-          mv win-x64/cimgui.dll win-x64/cimgui.win-x64.dll
-          mv win-x86/cimgui.dll win-x86/cimgui.win-x86.dll
-          mv win-ARM64/cimgui.dll win-ARM64/cimgui.win-arm64.dll
+          set -euo pipefail
+
+          mkdir -p release-assets
+
+          for lib in cimgui cimplot cimplot3d cimnodes cimnodes_r cimguizmo cimguizmo_quat cimCTE; do
+            mkdir -p "release-assets/${lib}"
+
+            cp "win-x64/win-x64/${lib}.win-x64.dll" "release-assets/${lib}/"
+            cp "win-x86/win-x86/${lib}.win-x86.dll" "release-assets/${lib}/"
+            cp "win-ARM64/win-arm64/${lib}.win-arm64.dll" "release-assets/${lib}/"
+            cp "ubuntu-latest-x64/linux-x64/${lib}.linux-x64.so" "release-assets/${lib}/"
+            cp "macos-latest-x64/macos-universal/${lib}.macos-universal.dylib" "release-assets/${lib}/"
+
+            if [ -d "JsonFiles/json/${lib}" ]; then
+              cp "JsonFiles/json/${lib}"/*.json "release-assets/${lib}/"
+            fi
+
+            (
+              cd "release-assets"
+              zip -r "${lib}.zip" "${lib}"
+            )
+
+            if [ "$lib" = "cimgui" ]; then
+              cp "release-assets/${lib}/cimgui.win-x64.dll" "release-assets/cimgui.win-x64.dll"
+              cp "release-assets/${lib}/cimgui.win-x86.dll" "release-assets/cimgui.win-x86.dll"
+              cp "release-assets/${lib}/cimgui.win-arm64.dll" "release-assets/cimgui.win-arm64.dll"
+              cp "release-assets/${lib}/cimgui.linux-x64.so" "release-assets/cimgui.so"
+              cp "release-assets/${lib}/cimgui.macos-universal.dylib" "release-assets/cimgui.dylib"
+              cp "release-assets/${lib}/definitions.json" "release-assets/definitions.json"
+              cp "release-assets/${lib}/structs_and_enums.json" "release-assets/structs_and_enums.json"
+            fi
+          done
+
+          find release-assets -maxdepth 1 -type f -print | sort
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ github.ref_name }}
           files: |
-            win-x64/cimgui.win-x64.dll
-            win-x86/cimgui.win-x86.dll
-            win-ARM64/cimgui.win-arm64.dll
-            JsonFiles/definitions.json
-            JsonFiles/structs_and_enums.json
-            ubuntu-latest-x64/cimgui.so
-            macos-latest-x64/cimgui.dylib
+            release-assets/*.zip
+            release-assets/cimgui.win-x64.dll
+            release-assets/cimgui.win-x86.dll
+            release-assets/cimgui.win-arm64.dll
+            release-assets/cimgui.so
+            release-assets/cimgui.dylib
+            release-assets/definitions.json
+            release-assets/structs_and_enums.json
