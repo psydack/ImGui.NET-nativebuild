@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <NativeFileReference Include="$(_ImGuiSourceBuildPkg)cimgui.cpp" />
+    <NativeFileReference Include="$(_ImGuiSourceBuildPkg)cimgui_assert.cpp" />
     <NativeFileReference Include="$(_ImGuiSourceBuildPkg)imgui/imgui.cpp" />
     <NativeFileReference Include="$(_ImGuiSourceBuildPkg)imgui/imgui_demo.cpp" />
     <NativeFileReference Include="$(_ImGuiSourceBuildPkg)imgui/imgui_draw.cpp" />

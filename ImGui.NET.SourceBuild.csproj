@@ -21,6 +21,11 @@
       <PackagePath>src/</PackagePath>
       <Pack>true</Pack>
     </Content>
+    <Content Include="$(MSBuildThisFileDirectory)cimgui/cimconfig.h">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackagePath>src/cimgui/</PackagePath>
+      <Pack>true</Pack>
+    </Content>
     <Content Include="$(MSBuildThisFileDirectory)cimgui/imgui/imgui.cpp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackagePath>src/imgui/</PackagePath>
