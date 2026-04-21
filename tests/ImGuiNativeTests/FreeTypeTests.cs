@@ -29,16 +29,17 @@ public class FreeTypeTests : IDisposable
     public void FontAtlas_BuildWithFreeType_Succeeds()
     {
         // ImGuiIO layout (64-bit, imgui 1.92.x):
-        //   ConfigFlags   int    @ 0
-        //   BackendFlags  int    @ 4
-        //   DisplaySize   float2 @ 8
-        //   DeltaTime     float  @ 16
-        //   IniSavingRate float  @ 20
-        //   IniFilename   ptr    @ 24
-        //   LogFilename   ptr    @ 32
-        //   UserData      ptr    @ 40
-        //   Fonts         ptr    @ 48  ← ImFontAtlas*
-        const int fontsOffset = 48;
+        //   ConfigFlags             int    @ 0
+        //   BackendFlags            int    @ 4
+        //   DisplaySize             float2 @ 8
+        //   DisplayFramebufferScale float2 @ 16
+        //   DeltaTime               float  @ 24
+        //   IniSavingRate           float  @ 28
+        //   IniFilename             ptr    @ 32
+        //   LogFilename             ptr    @ 40
+        //   UserData                ptr    @ 48
+        //   Fonts                   ptr    @ 56
+        const int fontsOffset = 56;
 
         IntPtr io = NativeLib.igGetIO();
         Assert.NotEqual(IntPtr.Zero, io);
