@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>net7.0</TargetFrameworks>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultItems>false</EnableDefaultItems>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
@@ -17,6 +19,11 @@
     <Content Include="$(MSBuildThisFileDirectory)cimgui/cimgui.h">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackagePath>src/</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)cimgui/cimconfig.h">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackagePath>src/cimgui/</PackagePath>
       <Pack>true</Pack>
     </Content>
     <Content Include="$(MSBuildThisFileDirectory)cimgui/imgui/imgui.cpp">
@@ -72,6 +79,26 @@
     <Content Include="$(MSBuildThisFileDirectory)cimgui/imgui/imstb_truetype.h">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackagePath>src/imgui/</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)cimgui/imgui/misc/freetype/imgui_freetype.cpp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackagePath>src/imgui/misc/freetype/</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)cimgui/imgui/misc/freetype/imgui_freetype.h">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackagePath>src/imgui/misc/freetype/</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)cimgui_config.h">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackagePath>src/</PackagePath>
+      <Pack>true</Pack>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)src/cimgui_assert.cpp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <PackagePath>src/</PackagePath>
       <Pack>true</Pack>
     </Content>
     <Content Include="ImGui.NET.SourceBuild.props">

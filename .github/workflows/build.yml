@@ -25,6 +25,7 @@ jobs:
   Build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest
@@ -71,6 +72,22 @@ jobs:
         run: dotnet nuget push bin\Packages\Release\*.nupkg -s https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_KEY}}
         # error can be fixed afterwards and job can be re-triggered
         continue-on-error: true
+
+      - name: Install FreeType (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install -y libfreetype-dev
+
+      - name: Install FreeType (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install freetype
+
+      - name: Install FreeType (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          arch="${{ matrix.architecture }}"
+          triplet="$(echo "$arch" | tr '[:upper:]' '[:lower:]')-windows-static"
+          vcpkg install "freetype[core]:${triplet}"
 
       - name: Build all libraries ${{ github.event.inputs.ReleaseType || 'Release' }}
         run: |
@@ -147,6 +164,25 @@ jobs:
             mkdir -p "artifacts/json/${lib}"
             cp "${src_dir}"/*.json "artifacts/json/${lib}/"
           done
+
+      - name: Verify cimgui exports
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            lib="cimgui/build/${{ matrix.architecture }}/${{ github.event.inputs.ReleaseType || 'Release' }}/cimgui.dll"
+            bash scripts/check-exports.sh --freetype "$lib"
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            bash scripts/check-exports.sh "cimgui/build/${{ github.event.inputs.ReleaseType || 'Release' }}/cimgui.dylib"
+          else
+            bash scripts/check-exports.sh --freetype "cimgui/build/${{ github.event.inputs.ReleaseType || 'Release' }}/cimgui.so"
+          fi
+
+      - name: Run functional tests
+        if: matrix.os == 'windows-latest' && matrix.architecture == 'x64'
+        shell: bash
+        env:
+          CIMGUI_NATIVE_PATH: ${{ github.workspace }}/cimgui/build/x64/${{ github.event.inputs.ReleaseType || 'Release' }}/cimgui.dll
+        run: dotnet test tests/ImGuiNativeTests/ -c Release --logger "console;verbosity=normal"
 
       - name: Upload win-${{ matrix.architecture }} ${{ github.event.inputs.ReleaseType || 'Release' }}
         uses: actions/upload-artifact@v7

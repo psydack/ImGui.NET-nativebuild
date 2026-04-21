@@ -23,6 +23,18 @@ goto ArgLoop
 :Build
 set "LIB_ROOT=%~dp0%BUILD_LIB%"
 
+rem Auto-configure vcpkg when VCPKG_INSTALLATION_ROOT is available (GitHub runners and local installs)
+set "VCPKG_FLAGS="
+if defined VCPKG_INSTALLATION_ROOT (
+    if /i [%BUILD_LIB%] == [cimgui] (
+        set "VCPKG_TRIPLET=x64-windows-static"
+        if /i [%BUILD_ARCH%] == [x86]   set "VCPKG_TRIPLET=x86-windows-static"
+        if /i [%BUILD_ARCH%] == [ARM64] set "VCPKG_TRIPLET=arm64-windows-static"
+        if /i [%BUILD_ARCH%] == [ARM]   set "VCPKG_TRIPLET=arm-windows-static"
+        set "VCPKG_FLAGS=-DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=%VCPKG_TRIPLET%"
+    )
+)
+
 rem Inject override CMakeLists.txt if the lib doesn't have its own
 set "OVERRIDE_CMAKE=%~dp0cmake\%BUILD_LIB%\CMakeLists.txt"
 if exist "%OVERRIDE_CMAKE%" (
@@ -39,7 +51,7 @@ If NOT exist "%LIB_ROOT%\build\%BUILD_ARCH%" (
   mkdir "%LIB_ROOT%\build\%BUILD_ARCH%"
 )
 pushd "%LIB_ROOT%\build\%BUILD_ARCH%"
-cmake -DCMAKE_GENERATOR_PLATFORM=%BUILD_CMAKE_GENERATOR_PLATFORM% -DCMAKE_MSVC_RUNTIME_LIBRARY=%MSVC_RUNTIME% -DCMAKE_CXX_FLAGS="%BUILD_CXX_WARNING_FLAGS%" ..\..
+cmake -DCMAKE_GENERATOR_PLATFORM=%BUILD_CMAKE_GENERATOR_PLATFORM% -DCMAKE_MSVC_RUNTIME_LIBRARY=%MSVC_RUNTIME% -DCMAKE_CXX_FLAGS="%BUILD_CXX_WARNING_FLAGS%" %VCPKG_FLAGS% ..\..
 if errorlevel 1 exit /b 1
 
 echo Calling cmake --build . --config %BUILD_CONFIG%
