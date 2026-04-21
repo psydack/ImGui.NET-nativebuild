@@ -43,7 +43,11 @@ case "$(uname -s)" in
     Linux)
         EXPORTS=$(nm -D "$LIB" 2>/dev/null || true) ;;
     MINGW*|MSYS*|CYGWIN*)
-        EXPORTS=$(nm "$LIB" 2>/dev/null || true) ;;
+        if command -v objdump >/dev/null 2>&1; then
+            EXPORTS=$(objdump -p "$LIB" 2>/dev/null || true)
+        else
+            EXPORTS=$(nm "$LIB" 2>/dev/null || true)
+        fi ;;
     *)
         EXPORTS=$(nm "$LIB" 2>/dev/null || true) ;;
 esac
