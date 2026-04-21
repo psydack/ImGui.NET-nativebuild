@@ -97,25 +97,6 @@ jobs:
           fi
         shell: bash
 
-      - name: Verify cimgui exports
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            lib="cimgui/build/${{ matrix.architecture }}/${{ github.event.inputs.ReleaseType || 'Release' }}/cimgui.dll"
-            python3 scripts/check-exports.py --freetype "$lib"
-          elif [ "$RUNNER_OS" == "macOS" ]; then
-            python3 scripts/check-exports.py "cimgui/build/${{ github.event.inputs.ReleaseType || 'Release' }}/cimgui.dylib"
-          else
-            python3 scripts/check-exports.py --freetype "cimgui/build/${{ github.event.inputs.ReleaseType || 'Release' }}/cimgui.so"
-          fi
-
-      - name: Run functional tests
-        if: matrix.os == 'windows-latest' && matrix.architecture == 'x64'
-        shell: bash
-        env:
-          CIMGUI_NATIVE_PATH: cimgui/build/x64/${{ github.event.inputs.ReleaseType || 'Release' }}/cimgui.dll
-        run: dotnet test tests/ImGuiNativeTests/ -c Release --logger "console;verbosity=normal"
-
       - name: Stage win-${{ matrix.architecture }} artifacts
         if: matrix.os == 'windows-latest'
         shell: bash
@@ -182,6 +163,25 @@ jobs:
             mkdir -p "artifacts/json/${lib}"
             cp "${src_dir}"/*.json "artifacts/json/${lib}/"
           done
+
+      - name: Verify cimgui exports
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            lib="cimgui/build/${{ matrix.architecture }}/${{ github.event.inputs.ReleaseType || 'Release' }}/cimgui.dll"
+            bash scripts/check-exports.sh --freetype "$lib"
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            bash scripts/check-exports.sh "cimgui/build/${{ github.event.inputs.ReleaseType || 'Release' }}/cimgui.dylib"
+          else
+            bash scripts/check-exports.sh --freetype "cimgui/build/${{ github.event.inputs.ReleaseType || 'Release' }}/cimgui.so"
+          fi
+
+      - name: Run functional tests
+        if: matrix.os == 'windows-latest' && matrix.architecture == 'x64'
+        shell: bash
+        env:
+          CIMGUI_NATIVE_PATH: cimgui/build/x64/${{ github.event.inputs.ReleaseType || 'Release' }}/cimgui.dll
+        run: dotnet test tests/ImGuiNativeTests/ -c Release --logger "console;verbosity=normal"
 
       - name: Upload win-${{ matrix.architecture }} ${{ github.event.inputs.ReleaseType || 'Release' }}
         uses: actions/upload-artifact@v7
