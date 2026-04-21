@@ -49,10 +49,10 @@ if(IMGUI_FREETYPE)
         endif()
 
         find_path(FREETYPE_INCLUDE_DIR_ft2build ft2build.h
-            PATHS "${_vcpkg_pkg_dir}/include"
+            PATHS "${_vcpkg_pkg_dir}/include" "${_vcpkg_pkg_dir}/include/freetype2"
             NO_DEFAULT_PATH)
         find_path(FREETYPE_INCLUDE_DIR_freetype2 freetype/config/ftheader.h
-            PATHS "${_vcpkg_pkg_dir}/include/freetype2"
+            PATHS "${_vcpkg_pkg_dir}/include" "${_vcpkg_pkg_dir}/include/freetype2"
             NO_DEFAULT_PATH)
         find_library(FREETYPE_LIBRARY_RELEASE freetype
             PATHS "${_vcpkg_pkg_dir}/lib"
