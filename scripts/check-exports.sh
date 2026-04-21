@@ -43,9 +43,20 @@ case "$(uname -s)" in
     Linux)
         EXPORTS=$(nm -D "$LIB" 2>/dev/null || true) ;;
     MINGW*|MSYS*|CYGWIN*)
-        if command -v objdump >/dev/null 2>&1; then
+        if command -v powershell.exe >/dev/null 2>&1; then
+            WIN_LIB=$(cygpath -w "$LIB" 2>/dev/null || printf '%s' "$LIB")
+            EXPORTS=$(WIN_LIB="$WIN_LIB" powershell.exe -NoProfile -Command '
+                $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+                if (Test-Path $vswhere) {
+                    $dumpbin = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -find "VC\Tools\MSVC\**\bin\Hostx64\x64\dumpbin.exe" | Select-Object -First 1
+                    if ($dumpbin) { & $dumpbin /exports $env:WIN_LIB }
+                }
+            ' 2>/dev/null || true)
+        fi
+        if [ -z "$EXPORTS" ] && command -v objdump >/dev/null 2>&1; then
             EXPORTS=$(objdump -p "$LIB" 2>/dev/null || true)
-        else
+        fi
+        if [ -z "$EXPORTS" ]; then
             EXPORTS=$(nm "$LIB" 2>/dev/null || true)
         fi ;;
     *)

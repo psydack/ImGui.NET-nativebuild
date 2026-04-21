@@ -181,7 +181,7 @@ jobs:
         if: matrix.os == 'windows-latest' && matrix.architecture == 'x64'
         shell: bash
         env:
-          CIMGUI_NATIVE_PATH: cimgui/build/x64/${{ github.event.inputs.ReleaseType || 'Release' }}/cimgui.dll
+          CIMGUI_NATIVE_PATH: ${{ github.workspace }}/cimgui/build/x64/${{ github.event.inputs.ReleaseType || 'Release' }}/cimgui.dll
         run: dotnet test tests/ImGuiNativeTests/ -c Release --logger "console;verbosity=normal"
 
       - name: Upload win-${{ matrix.architecture }} ${{ github.event.inputs.ReleaseType || 'Release' }}
