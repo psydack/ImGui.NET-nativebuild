@@ -31,6 +31,22 @@ internal static class NativeLib
     [DllImport("cimgui", CallingConvention = CallingConvention.Cdecl)]
     public static extern IntPtr igGetIO();
 
+    // ── Font atlas ───────────────────────────────────────────────────────────
+
+    [DllImport("cimgui", CallingConvention = CallingConvention.Cdecl)]
+    public static extern IntPtr ImFontAtlas_AddFontDefault(IntPtr atlas, IntPtr fontCfg);
+
+    [DllImport("cimgui", CallingConvention = CallingConvention.Cdecl)]
+    public static extern bool ImFontAtlas_Build(IntPtr atlas);
+
+    [DllImport("cimgui", CallingConvention = CallingConvention.Cdecl)]
+    public static extern void ImFontAtlas_GetTexDataAsAlpha8(
+        IntPtr atlas,
+        out IntPtr outPixels,
+        out int outWidth,
+        out int outHeight,
+        IntPtr outBytesPerPixel);
+
     // ── FreeType ─────────────────────────────────────────────────────────────
 
     [DllImport("cimgui", CallingConvention = CallingConvention.Cdecl)]

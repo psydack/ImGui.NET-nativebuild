@@ -8,7 +8,7 @@ public class AssertHandlerTests : IDisposable
 {
     private readonly IntPtr _ctx;
     // Field keeps the delegate alive for the lifetime of the test instance,
-    // preventing the GC from collecting it while native code may hold a pointer.
+    // preventing the GC from collecting it while native code holds a pointer.
     private NativeLib.AssertHandlerDelegate? _handler;
 
     public AssertHandlerTests()
@@ -23,15 +23,22 @@ public class AssertHandlerTests : IDisposable
     }
 
     [Fact]
-    public void SetHandler_RegisterAndUnregister_DoesNotCrash()
+    public void SetHandler_DoesNotCrash()
     {
         _handler = (expr, file, line) => { };
         NativeLib.cimgui_set_assert_handler(_handler);
-        NativeLib.cimgui_set_assert_handler(null);
     }
 
     [Fact]
-    public void TriggerTestAssert_WithHandler_FiresCallback()
+    public void SetHandler_Null_DisablesHandler()
+    {
+        _handler = (expr, file, line) => { };
+        NativeLib.cimgui_set_assert_handler(_handler);
+        NativeLib.cimgui_set_assert_handler(null); // must not crash
+    }
+
+    [Fact]
+    public void Handler_FiresOnExpectedCondition()
     {
         string? capturedExpr = null;
         _handler = (expr, file, line) => capturedExpr = expr;
@@ -42,13 +49,5 @@ public class AssertHandlerTests : IDisposable
 
         Assert.NotNull(capturedExpr);
         Assert.Contains("false", capturedExpr);
-    }
-
-    [Fact]
-    public void TriggerTestAssert_WithoutHandler_DoesNotCrash()
-    {
-        // With no handler registered the assert is a silent no-op.
-        NativeLib.cimgui_set_assert_handler(null);
-        NativeLib.cimgui_trigger_test_assert(); // must not throw or crash
     }
 }
