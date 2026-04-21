@@ -25,8 +25,7 @@ set(IMGUI_LIBRARIES)
 
 if(IMGUI_FREETYPE)
     message(STATUS "Building with freetype")
-    FIND_PACKAGE(freetype REQUIRED PATHS ${FREETYPE_PATH})
-    list(APPEND IMGUI_LIBRARIES freetype)
+    find_package(Freetype REQUIRED)
     list(APPEND IMGUI_SOURCES imgui/misc/freetype/imgui_freetype.cpp)
 endif()
 
@@ -66,6 +65,12 @@ endif()
 
 target_include_directories(cimgui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(cimgui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
+if(IMGUI_FREETYPE)
+    target_include_directories(cimgui PUBLIC ${FREETYPE_INCLUDE_DIRS})
+    if(TARGET Freetype::Freetype)
+        list(APPEND IMGUI_LIBRARIES Freetype::Freetype)
+    endif()
+endif()
 set_target_properties(cimgui PROPERTIES PREFIX "")
 target_link_libraries(cimgui ${IMGUI_LIBRARIES})
 

@@ -49,13 +49,8 @@ if [ -f "$patchFile" ] && git -C "$libPath" apply --check "$patchFile" >/dev/nul
     git -C "$libPath" apply "$patchFile"
 fi
 
-VCPKG_FLAGS=""
-if [ -n "${VCPKG_INSTALLATION_ROOT:-}" ] && [ "$_Lib" = "cimgui" ]; then
-    VCPKG_FLAGS="-DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
-fi
-
 mkdir -p "$libPath/build/$_CMakeBuildType"
 pushd "$libPath/build/$_CMakeBuildType"
-cmake ../.. -DCMAKE_OSX_ARCHITECTURES="$_CMakeOsxArchitectures" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DCMAKE_BUILD_TYPE=$_CMakeBuildType $VCPKG_FLAGS
+cmake ../.. -DCMAKE_OSX_ARCHITECTURES="$_CMakeOsxArchitectures" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DCMAKE_BUILD_TYPE=$_CMakeBuildType
 make
 popd
