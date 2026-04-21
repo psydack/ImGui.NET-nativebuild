@@ -15,7 +15,7 @@
 [submodule "cimguizmo"]
 	path = cimguizmo
 	url = https://github.com/psydack/cimguizmo
-	branch = psydack/update-imguizmo-a15acd8
+	branch = psydack/update-imguizmo-a15acd8-v2
 [submodule "cimguizmo_quat"]
 	path = cimguizmo_quat
 	url = https://github.com/psydack/cimguizmo_quat
