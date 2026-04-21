@@ -68,7 +68,9 @@ $CHECK_FREETYPE && SYMBOLS+=("${REQUIRED_FREETYPE[@]}")
 
 MISSING=()
 for sym in "${SYMBOLS[@]}"; do
-    grep -q "$sym" <<< "$EXPORTS" || MISSING+=("$sym")
+    # Avoid grep+here-string under pipefail, which can report SIGPIPE as failure
+    # even when the symbol exists.
+    [[ "$EXPORTS" == *"$sym"* ]] || MISSING+=("$sym")
 done
 
 if [ ${#MISSING[@]} -gt 0 ]; then
