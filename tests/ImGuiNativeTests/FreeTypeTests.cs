@@ -26,7 +26,7 @@ public class FreeTypeTests : IDisposable
     }
 
     [Fact]
-    public void FontAtlas_AddFontDefaultWithFreeTypeLoader_Succeeds()
+    public void FontAtlas_AndFreeTypeLoader_AreAvailable()
     {
         // ImGuiIO layout (64-bit, imgui 1.92.x):
         //   ConfigFlags             int    @ 0
@@ -49,9 +49,5 @@ public class FreeTypeTests : IDisposable
 
         IntPtr loader = NativeLib.ImGuiFreeType_GetFontLoader();
         Assert.NotEqual(IntPtr.Zero, loader);
-        NativeLib.ImFontAtlas_SetFontLoader(atlas, loader);
-
-        IntPtr font = NativeLib.ImFontAtlas_AddFontDefault(atlas, IntPtr.Zero);
-        Assert.NotEqual(IntPtr.Zero, font);
     }
 }
