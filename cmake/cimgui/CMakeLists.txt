@@ -37,43 +37,8 @@ if(IMGUI_FREETYPE)
                 set(VCPKG_TARGET_TRIPLET "x64-windows-static")
             endif()
         endif()
-
-        if(DEFINED VCPKG_INSTALLED_DIR AND DEFINED VCPKG_TARGET_TRIPLET)
-            set(_vcpkg_pkg_dir "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}")
-        elseif(DEFINED CMAKE_TOOLCHAIN_FILE AND DEFINED VCPKG_TARGET_TRIPLET)
-            get_filename_component(_vcpkg_buildsystems_dir "${CMAKE_TOOLCHAIN_FILE}" DIRECTORY)
-            get_filename_component(_vcpkg_root "${_vcpkg_buildsystems_dir}/../.." ABSOLUTE)
-            set(_vcpkg_pkg_dir "${_vcpkg_root}/installed/${VCPKG_TARGET_TRIPLET}")
-        else()
-            message(FATAL_ERROR "Windows FreeType build requires VCPKG_TARGET_TRIPLET and the vcpkg toolchain.")
-        endif()
-
-        find_path(FREETYPE_INCLUDE_DIR_ft2build ft2build.h
-            PATHS "${_vcpkg_pkg_dir}/include" "${_vcpkg_pkg_dir}/include/freetype2"
-            NO_DEFAULT_PATH)
-        find_path(FREETYPE_INCLUDE_DIR_freetype2 freetype/config/ftheader.h
-            PATHS "${_vcpkg_pkg_dir}/include" "${_vcpkg_pkg_dir}/include/freetype2"
-            NO_DEFAULT_PATH)
-        find_library(FREETYPE_LIBRARY_RELEASE freetype
-            PATHS "${_vcpkg_pkg_dir}/lib"
-            NO_DEFAULT_PATH)
-        find_library(FREETYPE_LIBRARY_DEBUG freetyped
-            PATHS "${_vcpkg_pkg_dir}/debug/lib"
-            NO_DEFAULT_PATH)
-
-        if(NOT FREETYPE_INCLUDE_DIR_ft2build OR NOT FREETYPE_INCLUDE_DIR_freetype2 OR NOT FREETYPE_LIBRARY_RELEASE)
-            message(FATAL_ERROR "Could not resolve FreeType from vcpkg triplet ${VCPKG_TARGET_TRIPLET} in ${_vcpkg_pkg_dir}.")
-        endif()
-
-        set(FREETYPE_INCLUDE_DIRS "${FREETYPE_INCLUDE_DIR_ft2build};${FREETYPE_INCLUDE_DIR_freetype2}")
-        if(FREETYPE_LIBRARY_DEBUG)
-            set(FREETYPE_LIBRARIES optimized ${FREETYPE_LIBRARY_RELEASE} debug ${FREETYPE_LIBRARY_DEBUG})
-        else()
-            set(FREETYPE_LIBRARIES ${FREETYPE_LIBRARY_RELEASE})
-        endif()
-    else()
-        find_package(Freetype REQUIRED)
     endif()
+    find_package(Freetype REQUIRED)
     list(APPEND IMGUI_SOURCES imgui/misc/freetype/imgui_freetype.cpp)
 endif()
 
@@ -114,10 +79,10 @@ endif()
 target_include_directories(cimgui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(cimgui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 if(IMGUI_FREETYPE)
-    target_include_directories(cimgui PUBLIC ${FREETYPE_INCLUDE_DIRS})
-    if(NOT WIN32 AND TARGET Freetype::Freetype)
+    if(TARGET Freetype::Freetype)
         list(APPEND IMGUI_LIBRARIES Freetype::Freetype)
     else()
+        target_include_directories(cimgui PUBLIC ${FREETYPE_INCLUDE_DIRS})
         list(APPEND IMGUI_LIBRARIES ${FREETYPE_LIBRARIES})
     endif()
 endif()
