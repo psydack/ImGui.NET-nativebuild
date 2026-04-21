@@ -53,7 +53,7 @@ $CHECK_FREETYPE && SYMBOLS+=("${REQUIRED_FREETYPE[@]}")
 
 MISSING=()
 for sym in "${SYMBOLS[@]}"; do
-    echo "$EXPORTS" | grep -q "$sym" || MISSING+=("$sym")
+    grep -q "$sym" <<< "$EXPORTS" || MISSING+=("$sym")
 done
 
 if [ ${#MISSING[@]} -gt 0 ]; then
