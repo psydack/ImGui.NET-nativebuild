@@ -28,7 +28,7 @@ internal static class NativeLib
     [DllImport("cimgui", CallingConvention = CallingConvention.Cdecl)]
     public static extern void igDestroyContext(IntPtr ctx);
 
-    [DllImport("cimgui", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport("cimgui", EntryPoint = "igGetIO_Nil", CallingConvention = CallingConvention.Cdecl)]
     public static extern IntPtr igGetIO();
 
     // ── Font atlas ───────────────────────────────────────────────────────────
