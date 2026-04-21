@@ -53,7 +53,7 @@ mkdir -p "$libPath/build/$_CMakeBuildType"
 pushd "$libPath/build/$_CMakeBuildType"
 EXTRA_CMAKE_FLAGS=""
 if [ "$_Lib" = "cimgui" ] && [ -n "$_CMakeOsxArchitectures" ] && [[ "$_CMakeOsxArchitectures" == *";"* ]]; then
-    EXTRA_CMAKE_FLAGS="-DIMGUI_FREETYPE=no"
+    EXTRA_CMAKE_FLAGS="-DIMGUI_FORCE_FREETYPE=OFF -DIMGUI_FREETYPE=no"
 fi
 
 cmake ../.. -DCMAKE_OSX_ARCHITECTURES="$_CMakeOsxArchitectures" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DCMAKE_BUILD_TYPE=$_CMakeBuildType $EXTRA_CMAKE_FLAGS

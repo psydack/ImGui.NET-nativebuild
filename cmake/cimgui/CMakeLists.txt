@@ -20,7 +20,12 @@ file(GLOB IMGUI_SOURCES
 )
 
 set(IMGUI_STATIC "no" CACHE STRING "Build as a static library")
-set(IMGUI_FREETYPE "yes" CACHE STRING "Build with freetype library" FORCE)
+option(IMGUI_FORCE_FREETYPE "Force-enable FreeType by default (can be disabled for constrained targets)." ON)
+if(IMGUI_FORCE_FREETYPE)
+    set(IMGUI_FREETYPE "yes" CACHE STRING "Build with freetype library" FORCE)
+else()
+    set(IMGUI_FREETYPE "${IMGUI_FREETYPE}" CACHE STRING "Build with freetype library")
+endif()
 set(IMGUI_LIBRARIES)
 
 if(IMGUI_FREETYPE)
