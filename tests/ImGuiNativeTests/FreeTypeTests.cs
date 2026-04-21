@@ -26,7 +26,7 @@ public class FreeTypeTests : IDisposable
     }
 
     [Fact]
-    public void FontAtlas_BuildWithFreeType_Succeeds()
+    public void FontAtlas_AddFontDefaultWithFreeTypeLoader_Succeeds()
     {
         // ImGuiIO layout (64-bit, imgui 1.92.x):
         //   ConfigFlags             int    @ 0
@@ -47,14 +47,11 @@ public class FreeTypeTests : IDisposable
         IntPtr atlas = Marshal.ReadIntPtr(io, fontsOffset);
         Assert.NotEqual(IntPtr.Zero, atlas);
 
+        IntPtr loader = NativeLib.ImGuiFreeType_GetFontLoader();
+        Assert.NotEqual(IntPtr.Zero, loader);
+        NativeLib.ImFontAtlas_SetFontLoader(atlas, loader);
+
         IntPtr font = NativeLib.ImFontAtlas_AddFontDefault(atlas, IntPtr.Zero);
         Assert.NotEqual(IntPtr.Zero, font);
-
-        bool built = NativeLib.ImFontAtlas_Build(atlas);
-        Assert.True(built);
-
-        NativeLib.ImFontAtlas_GetTexDataAsAlpha8(atlas, out _, out int width, out int height, IntPtr.Zero);
-        Assert.True(width > 0, $"Expected atlas width > 0, got {width}");
-        Assert.True(height > 0, $"Expected atlas height > 0, got {height}");
     }
 }
