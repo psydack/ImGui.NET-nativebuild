@@ -14,7 +14,8 @@
 	branch = master
 [submodule "cimguizmo"]
 	path = cimguizmo
-	url = https://github.com/cimgui/cimguizmo
+	url = https://github.com/psydack/cimguizmo
+	branch = master
 [submodule "cimguizmo_quat"]
 	path = cimguizmo_quat
 	url = https://github.com/psydack/cimguizmo_quat
