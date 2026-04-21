@@ -14,3 +14,10 @@ ASSERT_EXPORT void cimgui_set_assert_handler(ImGuiAssertHandlerFn handler)
 {
     GImGuiAssertHandler = handler;
 }
+
+// Fires IM_ASSERT(false) unconditionally. Used by automated tests to verify
+// that a registered handler actually receives callbacks.
+ASSERT_EXPORT void cimgui_trigger_test_assert(void)
+{
+    IM_ASSERT(false);
+}
