@@ -25,6 +25,7 @@ jobs:
   Build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest
@@ -86,7 +87,7 @@ jobs:
         run: |
           arch="${{ matrix.architecture }}"
           triplet="$(echo "$arch" | tr '[:upper:]' '[:lower:]')-windows-static"
-          vcpkg install "freetype:${triplet}"
+          vcpkg install "freetype[core]:${triplet}"
 
       - name: Build all libraries ${{ github.event.inputs.ReleaseType || 'Release' }}
         run: |
