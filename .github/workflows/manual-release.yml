@@ -186,7 +186,8 @@ jobs:
 
       - name: Install FreeType (macOS)
         if: matrix.os == 'macos-latest'
-        run: brew install freetype
+        run: |
+          brew list freetype >/dev/null 2>&1 || brew install freetype
 
       - name: Install FreeType (Windows)
         if: matrix.os == 'windows-latest'
