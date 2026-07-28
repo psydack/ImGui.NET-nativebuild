@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15)
+cmake_policy(SET CMP0091 NEW)
 
 project(cimguizmo)
 
@@ -10,11 +11,11 @@ file(GLOB IMGUI_SOURCES
     ../cimgui/imgui/imgui_widgets.cpp
     ../cimgui/imgui/imgui_tables.cpp
     cimguizmo.cpp
-    ImGuizmo/ImGuizmo.cpp
+    ImGuizmo/src/ImGuizmo.cpp
 )
 
 set(IMGUI_STATIC "no" CACHE STRING "Build as a static library")
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 if (IMGUI_STATIC)
     add_library(cimguizmo STATIC ${IMGUI_SOURCES})
@@ -22,10 +23,13 @@ else (IMGUI_STATIC)
     add_library(cimguizmo SHARED ${IMGUI_SOURCES})
 endif (IMGUI_STATIC)
 
+include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/windows-hardening.cmake")
+uimgui_harden_windows(cimguizmo)
+
 add_definitions("-DIMGUI_USER_CONFIG=\"../cimconfig.h\"")
 target_compile_definitions(cimguizmo PUBLIC IMGUI_DISABLE_OBSOLETE_FUNCTIONS=1)
 
-target_include_directories(cimguizmo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ImGuizmo)
+target_include_directories(cimguizmo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ImGuizmo/src)
 target_include_directories(cimguizmo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../cimgui/imgui)
 target_include_directories(cimguizmo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../cimgui)
 set_target_properties(cimguizmo PROPERTIES PREFIX "")

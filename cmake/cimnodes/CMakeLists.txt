@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15)
+cmake_policy(SET CMP0091 NEW)
 
 project(cimnodes)
 
@@ -21,6 +22,9 @@ if (IMGUI_STATIC)
 else (IMGUI_STATIC)
     add_library(cimnodes SHARED ${IMGUI_SOURCES})
 endif (IMGUI_STATIC)
+
+include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/windows-hardening.cmake")
+uimgui_harden_windows(cimnodes)
 
 add_definitions("-DIMGUI_USER_CONFIG=\"../cimconfig.h\"")
 add_definitions("-DIMNODES_NAMESPACE=imnodes")

@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15)
+cmake_policy(SET CMP0091 NEW)
 
 project(cimCTE)
 
@@ -22,6 +23,9 @@ if (IMGUI_STATIC)
 else (IMGUI_STATIC)
     add_library(cimCTE SHARED ${IMGUI_SOURCES})
 endif (IMGUI_STATIC)
+
+include("${CMAKE_CURRENT_SOURCE_DIR}/../cmake/windows-hardening.cmake")
+uimgui_harden_windows(cimCTE)
 
 add_definitions("-DIMGUI_USER_CONFIG=\"../cimconfig.h\"")
 target_compile_definitions(cimCTE PUBLIC IMGUI_DISABLE_OBSOLETE_FUNCTIONS=1)
