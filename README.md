@@ -20,7 +20,7 @@ Current submodule references used by this repository:
 | `cimnodes` | `ba3cd2e` + imnodes `c9bb8e9` |
 | `cimnodes_r` | `d7773e8` |
 | `cimguizmo` | `b5f40d7` + ImGuizmo `dc25afb` |
-| `cimguizmo_quat` | `03658b0` + imGuIZMO.quat `da1a5b0` |
+| `cimguizmo_quat` | `7e50cad` + imGuIZMO.quat `48f112c` |
 | `cimCTE` | `84be9ba` + compatible ImGuiColorTextEdit `e83caa8` |
 
 ## Repository Layout
